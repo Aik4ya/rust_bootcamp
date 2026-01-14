@@ -4,7 +4,7 @@ use std::io::{self, Read};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    
+
     let mut top_n = 10;
     let mut min_length = 1;
     let mut ignore_case = false;
@@ -40,12 +40,16 @@ fn main() {
     }
 
     let mut counts = HashMap::new();
-    
-    let text_to_process = if ignore_case { input_text.to_lowercase() } else { input_text };
+
+    let text_to_process = if ignore_case {
+        input_text.to_lowercase()
+    } else {
+        input_text
+    };
 
     for word in text_to_process.split_whitespace() {
         let clean_word = word.trim_matches(|c: char| !c.is_alphanumeric());
-        
+
         if clean_word.len() >= min_length {
             *counts.entry(clean_word.to_string()).or_insert(0) += 1;
         }
