@@ -10,8 +10,12 @@ fn main() {
         match args[i].as_str() {
             "--upper" => upper = true,
             "--repeat" => {
-                repeat = args.get(i + 1).and_then(|s| s.parse().ok()).unwrap_or(1);
+                repeat = args[i + 1].parse().unwrap_or(1);
                 i += 1;
+            }
+            arg if arg.starts_with("--") => {
+                eprintln!("error: unknown option: {}", arg);
+                std::process::exit(2);
             }
             _ => name = args[i].clone(),
         }
