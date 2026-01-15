@@ -68,11 +68,15 @@ fn read_mode(
         let chunk = &buffer[line_start..line_end];
 
         for i in 0..16 {
-            print!(" ");
+            if i == 8 {
+                print!("  ");
+            } else {
+                print!(" ");
+            }
             if i < chunk.len() {
                 print!("{:02x}", chunk[i]);
             } else {
-                print!("..");
+                print!(".");
             }
         }
 
