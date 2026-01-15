@@ -61,17 +61,18 @@ fn read_mode(
 
     let mut pos = offset;
     while pos < offset + size {
-        print!("{:08x}: ", pos);
+        print!("{:08x}:", pos);
 
         let line_start = pos - offset;
         let line_end = std::cmp::min(line_start + 16, buffer.len());
         let chunk = &buffer[line_start..line_end];
 
         for i in 0..16 {
+            print!(" ");
             if i < chunk.len() {
-                print!("{:02x} ", chunk[i]);
+                print!("{:02x}", chunk[i]);
             } else {
-                print!(".. ");
+                print!("..");
             }
         }
 
