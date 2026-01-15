@@ -1,7 +1,11 @@
 [package]
 name = "cipher_chat"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+
+[[bin]]
+name = "streamchat"
+path = "src/main.rs"
 
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
