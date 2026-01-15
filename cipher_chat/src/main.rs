@@ -62,11 +62,11 @@ fn start_server(port: u16) {
         println!("g = {} (generator - public)", G);
 
         let mut rng = rand::thread_rng();
-        let priv = rng.gen::<u64>();
-        let pub_key = make_pub_key(priv);
+        let priv_key = rng.gen::<u64>();
+        let pub_key = make_pub_key(priv_key);
 
         println!("\n[DH] Generating our keypair...");
-        println!("private_key = {:X} (random 64-bit)", priv);
+        println!("private_key = {:X} (random 64-bit)", priv_key);
         println!("public_key  = g^private mod p = {:X}", pub_key);
 
         let mut data = [0u8; 8];
@@ -74,7 +74,7 @@ fn start_server(port: u16) {
         socket.read_exact(&mut data).unwrap();
         let other_pub = u64::from_le_bytes(data);
 
-        let secret = make_secret(priv, other_pub);
+        let secret = make_secret(priv_key, other_pub);
         println!("\n[DH] Computing shared secret...");
         println!("secret = {:X}", secret);
         println!("\nSecure channel established!\n");
@@ -89,8 +89,8 @@ fn start_client(addr: &str) {
     println!("\n[DH] Starting key exchange...");
 
     let mut rng = rand::thread_rng();
-    let priv = rng.gen::<u64>();
-    let pub_key = make_pub_key(priv);
+    let priv_key = rng.gen::<u64>();
+    let pub_key = make_pub_key(priv_key);
 
     let mut data = [0u8; 8];
     socket.read_exact(&mut data).unwrap();
@@ -98,7 +98,7 @@ fn start_client(addr: &str) {
 
     socket.write_all(&pub_key.to_le_bytes()).unwrap();
 
-    let secret = make_secret(priv, other_pub);
+    let secret = make_secret(priv_key, other_pub);
     println!("[DH] Computing shared secret...");
     println!("secret = {:X}", secret);
     println!("\nSecure channel established!\n");
