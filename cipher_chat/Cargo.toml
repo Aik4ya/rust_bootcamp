@@ -1,5 +1,5 @@
 [package]
-name = "streamchat"
+name = "cipher_chat"
 version = "0.1.0"
 edition = "2024"
 

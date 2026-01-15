@@ -7,7 +7,7 @@ const P: u64 = 0xD87FA3E291B4C7F3;
 const G: u64 = 2;
 
 #[derive(Parser)]
-#[command(name = "streamchat")]
+#[command(name = "cipher_chat")]
 #[command(about = "Stream cipher chat with Diffie-Hellman key generation")]
 struct Args {
     #[command(subcommand)]
