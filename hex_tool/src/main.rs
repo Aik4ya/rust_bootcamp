@@ -76,7 +76,7 @@ fn read_mode(
             if i < chunk.len() {
                 print!("{:02x}", chunk[i]);
             } else {
-                print!(".");
+                print!("..");
             }
         }
 
