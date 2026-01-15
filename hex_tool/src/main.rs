@@ -59,32 +59,39 @@ fn read_mode(
     let bytes_read = file.read(&mut buffer)?;
     buffer.truncate(bytes_read);
 
-    for (i, chunk) in buffer.chunks(16).enumerate() {
-        let pos = offset + i * 16;
+    let mut pos = offset;
+    while pos < offset + size {
         print!("{:08x}:", pos);
 
-        for j in 0..16 {
+        let line_start = pos - offset;
+        let line_end = std::cmp::min(line_start + 16, buffer.len());
+        let chunk = &buffer[line_start..line_end];
+
+        for i in 0..16 {
             print!(" ");
-            if j < chunk.len() {
-                print!("{:02x}", chunk[j]);
+            if i < chunk.len() {
+                print!("{:02x}", chunk[i]);
             } else {
-                print!(".");
+                print!("..");
             }
         }
 
         print!(" |");
-        for j in 0..chunk.len() {
-            let ch = if chunk[j] >= 32 && chunk[j] < 127 {
-                chunk[j] as char
+        for i in 0..16 {
+            if i < chunk.len() {
+                let ch = if chunk[i] >= 32 && chunk[i] < 127 {
+                    chunk[i] as char
+                } else {
+                    '.'
+                };
+                print!("{}", ch);
             } else {
-                '.'
-            };
-            print!("{}", ch);
-        }
-        for _ in chunk.len()..16 {
-            print!(".");
+                print!(".");
+            }
         }
         println!("|");
+
+        pos += 16;
     }
 
     Ok(())
