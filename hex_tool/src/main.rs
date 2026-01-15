@@ -1,6 +1,6 @@
 use clap::Parser;
 use std::fs::File;
-use std::io::{Read, Write, Seek, SeekFrom};
+use std::io::{Read, Seek, SeekFrom, Write};
 
 #[derive(Parser)]
 #[command(name = "hex_tool")]
@@ -32,13 +32,13 @@ fn parse_offset(offset_str: &str) -> usize {
 
 fn hex_string_to_bytes(hex: &str) -> Result<Vec<u8>, String> {
     let hex = hex.trim();
-    if hex.len() % 2 != 0 {
+    if !hex.len().is_multiple_of(2) {
         return Err("Hex string must have even length".to_string());
     }
-    
+
     let mut bytes = Vec::new();
     for i in (0..hex.len()).step_by(2) {
-        let byte_str = &hex[i..i+2];
+        let byte_str = &hex[i..i + 2];
         match u8::from_str_radix(byte_str, 16) {
             Ok(byte) => bytes.push(byte),
             Err(_) => return Err(format!("Invalid hex: {}", byte_str)),
@@ -47,7 +47,11 @@ fn hex_string_to_bytes(hex: &str) -> Result<Vec<u8>, String> {
     Ok(bytes)
 }
 
-fn read_mode(file_path: &str, offset: usize, size: usize) -> Result<(), Box<dyn std::error::Error>> {
+fn read_mode(
+    file_path: &str,
+    offset: usize,
+    size: usize,
+) -> Result<(), Box<dyn std::error::Error>> {
     let mut file = File::open(file_path)?;
     file.seek(SeekFrom::Start(offset as u64))?;
 
@@ -55,36 +59,50 @@ fn read_mode(file_path: &str, offset: usize, size: usize) -> Result<(), Box<dyn 
     let bytes_read = file.read(&mut buffer)?;
     buffer.truncate(bytes_read);
 
-    for (i, chunk) in buffer.chunks(16).enumerate() {
-        let pos = offset + i * 16;
+    let mut pos = offset;
+    while pos < offset + size {
         print!("{:08x}: ", pos);
 
-        for byte in chunk {
-            print!("{:02x} ", byte);
-        }
+        let line_start = pos - offset;
+        let line_end = std::cmp::min(line_start + 16, buffer.len());
+        let chunk = &buffer[line_start..line_end];
 
-        for _ in chunk.len()..16 {
-            print!("   ");
+        for i in 0..16 {
+            if i < chunk.len() {
+                print!("{:02x} ", chunk[i]);
+            } else {
+                print!(".. ");
+            }
         }
 
         print!(" |");
-        for byte in chunk {
-            let ch = if *byte >= 32 && *byte < 127 {
-                *byte as char
+        for i in 0..16 {
+            if i < chunk.len() {
+                let ch = if chunk[i] >= 32 && chunk[i] < 127 {
+                    chunk[i] as char
+                } else {
+                    '.'
+                };
+                print!("{}", ch);
             } else {
-                '.'
-            };
-            print!("{}", ch);
+                print!(".");
+            }
         }
         println!("|");
+
+        pos += 16;
     }
 
     Ok(())
 }
 
-fn write_mode(file_path: &str, hex_string: &str, offset: usize) -> Result<(), Box<dyn std::error::Error>> {
+fn write_mode(
+    file_path: &str,
+    hex_string: &str,
+    offset: usize,
+) -> Result<(), Box<dyn std::error::Error>> {
     let bytes = hex_string_to_bytes(hex_string)?;
-    
+
     let mut buffer = if std::path::Path::new(file_path).exists() {
         let mut file = File::open(file_path)?;
         let file_size = file.metadata()?.len() as usize;
