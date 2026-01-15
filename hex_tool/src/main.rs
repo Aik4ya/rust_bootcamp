@@ -3,8 +3,8 @@ use std::fs::File;
 use std::io::{Read, Write, Seek, SeekFrom};
 
 #[derive(Parser)]
-#[command(name = "hextool")]
-#[command(about = "lit et ecrit des fichiers binaires en hex")]
+#[command(name = "hex_tool")]
+#[command(about = "Read and write binary files in hexadecimal")]
 struct Args {
     #[arg(short, long)]
     file: String,
@@ -33,7 +33,7 @@ fn parse_offset(offset_str: &str) -> usize {
 fn hex_string_to_bytes(hex: &str) -> Result<Vec<u8>, String> {
     let hex = hex.trim();
     if hex.len() % 2 != 0 {
-        return Err("la string hex doit avoir un nombre pair de caracteres".to_string());
+        return Err("Hex string must have even length".to_string());
     }
     
     let mut bytes = Vec::new();
@@ -41,7 +41,7 @@ fn hex_string_to_bytes(hex: &str) -> Result<Vec<u8>, String> {
         let byte_str = &hex[i..i+2];
         match u8::from_str_radix(byte_str, 16) {
             Ok(byte) => bytes.push(byte),
-            Err(_) => return Err(format!("hex pas bon: {}", byte_str)),
+            Err(_) => return Err(format!("Invalid hex: {}", byte_str)),
         }
     }
     Ok(bytes)
@@ -54,9 +54,6 @@ fn read_mode(file_path: &str, offset: usize, size: usize) -> Result<(), Box<dyn 
     let mut buffer = vec![0; size];
     let bytes_read = file.read(&mut buffer)?;
     buffer.truncate(bytes_read);
-
-    println!("lecture {} bytes a partir de 0x{:08x}", bytes_read, offset);
-    println!();
 
     for (i, chunk) in buffer.chunks(16).enumerate() {
         let pos = offset + i * 16;
@@ -93,7 +90,7 @@ fn write_mode(file_path: &str, hex_string: &str, offset: usize) -> Result<(), Bo
         let file_size = file.metadata()?.len() as usize;
 
         if offset > file_size {
-            return Err("offset trop grand".into());
+            return Err("Offset exceeds file size".into());
         }
 
         let mut buf = vec![0; file_size];
@@ -114,24 +111,7 @@ fn write_mode(file_path: &str, hex_string: &str, offset: usize) -> Result<(), Bo
     let mut file = File::create(file_path)?;
     file.write_all(&buffer)?;
 
-    println!("ecriture de {} bytes a l'offset 0x{:08x}", bytes.len(), offset);
-    print!("hex:   ");
-    for byte in &bytes {
-        print!("{:02x} ", byte);
-    }
-    println!();
-
-    print!("ascii: ");
-    for byte in &bytes {
-        let ch = if *byte >= 32 && *byte < 127 {
-            *byte as char
-        } else {
-            '?'
-        };
-        print!("{}", ch);
-    }
-    println!();
-    println!("ok c'est ecrit");
+    println!("Successfully written");
 
     Ok(())
 }
@@ -143,13 +123,13 @@ fn main() {
 
     if args.read {
         if let Err(e) = read_mode(&args.file, offset, args.size) {
-            eprintln!("oups erreur en lecture: {}", e);
+            eprintln!("Error reading file: {}", e);
         }
     } else if let Some(hex_data) = args.write {
         if let Err(e) = write_mode(&args.file, &hex_data, offset) {
-            eprintln!("oups erreur en ecriture: {}", e);
+            eprintln!("Error writing file: {}", e);
         }
     } else {
-        eprintln!("faut utiliser --read ou --write");
+        eprintln!("Use --read or --write option");
     }
 }
