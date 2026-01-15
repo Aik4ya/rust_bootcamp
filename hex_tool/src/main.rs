@@ -68,22 +68,21 @@ fn read_mode(
             if j < chunk.len() {
                 print!("{:02x}", chunk[j]);
             } else {
-                print!("..");
+                print!(".");
             }
         }
 
         print!(" |");
-        for j in 0..16 {
-            if j < chunk.len() {
-                let ch = if chunk[j] >= 32 && chunk[j] < 127 {
-                    chunk[j] as char
-                } else {
-                    '.'
-                };
-                print!("{}", ch);
+        for j in 0..chunk.len() {
+            let ch = if chunk[j] >= 32 && chunk[j] < 127 {
+                chunk[j] as char
             } else {
-                print!(".");
-            }
+                '.'
+            };
+            print!("{}", ch);
+        }
+        for _ in chunk.len()..16 {
+            print!(".");
         }
         println!("|");
     }
